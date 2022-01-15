@@ -1,29 +1,15 @@
-const Discord = require("discord.js")
-const ayarlar = require("../ayarlar.json")
+const { MessageEmbed } = require("discord.js");
+const config = require("../config.json");
 
-module.exports.run = async (client, message, args) => {
-    if(!message.member.hasPermission("ADMINISTRATOR")) return message.channel.send(`${client.emojis.cache.get(ayarlar.no)} **Bu işlemi gerçekleştirmek için gerekli yetkin yok!**`).then(message.react(client.emojis.cache.get(ayarlar.no)))
-
-    const etiketlenenKişi = message.mentions.members.first() || message.guild.members.cache.get(args[0])
-if(!etiketlenenKişi) return message.channel.send(`${client.emojis.cache.get(ayarlar.no)} **Vip vermek için bir kişi etiketlemelisin!**`).then(message.react(client.emojis.cache.get(ayarlar.no)))
-
-const mattheEmbed = new Discord.MessageEmbed()
-.setColor("RANDOM")
-.setFooter(ayarlar.footer)
-.setAuthor(message.member.displayName, message.author.avatarURL({dynamic: true}))
-.setTimestamp()
-
-if(etiketlenenKişi.roles.cache.has(ayarlar.vipRol)) return message.channel.send(mattheEmbed.setDescription(`Kullanıcıdan başarıyla vip <@&${ayarlar.vipRol}> rolü alındı!`)).then(etiketlenenKişi.roles.remove(ayarlar.vipRol))
-
-etiketlenenKişi.roles.add(ayarlar.vipRol)
-
-message.react(client.emojis.cache.get(ayarlar.yes))
-
-message.channel.send(mattheEmbed.setDescription(`Kullanıcıya başarıyla <@&${ayarlar.vipRol}> rolü verildi!`))//Youtube Matthe
-
-}
-exports.config = {
+module.exports = {
     name: "vip",
-    guildOnly: true,
-    aliases: ["valuable", "very-important-person", "veryimportantperson"]
+    aliases: ["valuable", "very-important-person", "veryimportantperson"],
+    run: async (client, message, args) => {
+        const embed = new MessageEmbed().setAuthor(message.author.username, message.author.avatarURL()).setTimestamp().setColor("00f1ff")
+        var member = message.mentions.users.first() || message.guild.members.cache.get(args[0]);
+        if (!message.member.hasPermission("ADMINISTRATOR")) return message.channel.send(embed.setDescription("Ne yazık ki komutu kullanan kişide yetki yok"))
+        if (!member) return message.channel.send(embed.setDescription("Lütfen bir kullanıcıyı etiketle."))
+        await message.guild.members.cache.get(member.id).roles.add(config.roles.viprole)
+        message.channel.send(embed.setDescription(`${member} kullanıcısına başarıyla \`Vip\` rolü verildi!`))
+    }
 }

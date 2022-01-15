@@ -1,41 +1,22 @@
 const Discord = require("discord.js");
 const db = require("quick.db");
-const ayarlar = require("../ayarlar.json")
+const config = require("../config.json")
 
-module.exports.run = async (client, message, args) => {
-    if(!ayarlar.yetkiliRol.some(mattheee => message.member.roles.cache.has(mattheee)) && !message.member.hasPermission("ADMINISTRATOR")) return message.channel.send(`${client.emojis.cache.get(ayarlar.no)} **Bu işlemi gerçekleştirmek için gerekli yetkin yok!**`).then(message.react(client.emojis.cache.get(ayarlar.no)))
+module.exports = {
+    name: 'isim',
+    aliases: ['i'],
+    run: async (client, message, args) => {
+        const embed = new Discord.MessageEmbed().setFooter("Developed By Jahky").setAuthor(message.author.username, message.author.avatarURL()).setTimestamp().setColor("00f1ff");
+        var member = message.mentions.users.first() || message.guild.members.cache.get(args[0]);
+        var name = args[1]
+        var age = args[2]
+        if (message.member.roles.cache.get(config.registration.stafd) && !message.member.hasPermission("ADMINISTRATOR")) return message.channel.send(embed.setDescription("Bu komutu kullanabilmek için öncelikle gerekli yetkin olmalı"));
+        if (!member) return message.channel.send(embed.setDescription("Öncelikle bir kullanıcıyı etiketle."));
+        if (!name) return message.channel.send(embed.setDescription("Öncelikle kullanıcı için bir isim belirt."));
+        if (!age) return message.channel.send(embed.setDescription("Öncelikle kullanıcı için bir yaş belirt."));
 
-    const etiketlenenKişi = message.mentions.members.first() || message.guild.members.cache.get(args[0])
-if(!etiketlenenKişi) return message.channel.send(`${client.emojis.cache.get(ayarlar.no)} **İsim değiştirmek için bir kişi etiketlemelisin!**`).then(message.react(client.emojis.cache.get(ayarlar.no)))
-
-const isim = args[1];
-const yaş = args[2];
-if(!isim) return message.channel.send(`${client.emojis.cache.get(ayarlar.no)} **İsim değiştirmek için bir isim belirtmelisin!**`).then(message.react(client.emojis.cache.get(ayarlar.no)))
-if(!yaş) return message.channel.send(`${client.emojis.cache.get(ayarlar.no)} **İsim değiştirmek için için bir yaş belirtmelisin!**`).then(message.react(client.emojis.cache.get(ayarlar.no)))
-if(isNaN(yaş)) return message.channel.send(`${client.emojis.cache.get(ayarlar.no)} **Belirttiğin yaş rakamlardan oluşmalı!**`).then(message.react(client.emojis.cache.get(ayarlar.no)))
-
-etiketlenenKişi.setNickname(`${ayarlar.tag} ${isim} ${ayarlar.sembol} ${yaş}`)
-
-message.react(client.emojis.cache.get(ayarlar.yes))
-
-const mattheEmbed = new Discord.MessageEmbed()
-.setColor("RANDOM")
-.setDescription(`Kullanıcının ismi \`${ayarlar.tag} ${isim} ${ayarlar.sembol} ${yaş}\` olarak değiştirildi!`)//Youtube Matthe
-.setFooter(ayarlar.footer)
-.setAuthor(message.member.displayName, message.author.avatarURL({dynamic: true}))
-.setTimestamp()
-
-message.channel.send(mattheEmbed)
-
-db.push(`isimler.${etiketlenenKişi.id}`, {
-İsim: isim,
-Yaş: yaş,
-Yetkili: message.author.id
-})
-
-}
-exports.config = {
-    name: "isim",
-    guildOnly: true,
-    aliases: ["i", "nick"]
+        db.push(`isimler_${member.id}`, ` \`${name} | ${age}\` ( isim değiştirme )`);
+        message.guild.members.cache.get(member.id).setNickname(`${config.registration.GuildTag} ${name} | ${age}`);
+        message.channel.send(embed.setDescription(`${member} kullanıcısının ismi başarıyla \`${name} | ${age}\` olarak değiştirildi!`));
+    }
 }
